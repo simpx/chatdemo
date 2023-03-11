@@ -1,6 +1,9 @@
 import gradio as gr
 import openai
 
+config = open("config").readlines()
+openai.api_key = config[0].strip()
+openai.api_base = config[1].strip()
 
 '''
  gradio: [['第一次说话', 'No'], ['试试第二次', 'Yes']]
