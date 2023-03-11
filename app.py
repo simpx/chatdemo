@@ -38,11 +38,23 @@ def respond(chat_history, message):
     return result
 
 with gr.Blocks() as demo:
+    gr.Markdown("## Chat with GPT")
+    state = gr.State()
     chatbot = gr.Chatbot()
-    msg = gr.Textbox()
-    clear = gr.Button("Clear")
-
-    msg.submit(respond, [chatbot, msg], chatbot)
-    clear.click(lambda: None, None, chatbot, queue=False)
+    message = gr.Textbox(label = "Message:", placeholder="Enter text")
+    message.submit(
+        respond,
+        [chatbot, message],
+        chatbot,
+    )
+    with gr.Row():
+        clear = gr.Button("Clear")
+        clear.click(lambda: None, None, chatbot)
+        send = gr.Button("Send")
+        send.click(
+            respond,
+            [chatbot, message],
+            chatbot,
+        )
 
 demo.launch(server_name="0.0.0.0", server_port=8000)
