@@ -54,7 +54,7 @@ with gr.Blocks() as demo:
     with gr.Tab("Config"):
         with gr.Row():
             key_txt = gr.Textbox(label = "Openai Key", placeholder="Enter openai key 'sk-xxxx'%s" %
-                    (", Leave empty to use value from config file" if openai.api_key else ""))
+                    (", Leave empty to use value from config file" if api_key_from_config else ""))
             url_txt = gr.Textbox(label = "Openai API Base URL", placeholder="Enter openai base url 'https://xxx', Leave empty to use value '%s'" % openai.api_base)
         system_message = gr.Textbox(label = "System Message:", value = "You are an assistant who gives brief and concise answers.")
 
