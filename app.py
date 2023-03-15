@@ -79,5 +79,7 @@ with gr.Blocks() as demo:
                 chatbot,
             )
 
+if __name__ == "__main__":
+    demo.launch()
 
-demo.launch(server_name=server_name, server_port=server_port)
+#demo.launch(server_name=server_name, server_port=server_port)
