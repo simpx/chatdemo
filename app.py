@@ -15,8 +15,6 @@ if len(config) > 1 and len(config[1].strip()) > 0:
     openai.api_base = config[1].strip()
 
 # config
-server_name = "0.0.0.0"
-server_port = 8000
 DEBUG = True
 
 '''
@@ -56,7 +54,7 @@ with gr.Blocks() as demo:
     with gr.Tab("Config"):
         with gr.Row():
             key_txt = gr.Textbox(label = "Openai Key", placeholder="Enter openai key 'sk-xxxx'%s" %
-                    (", Leave empty to use value from config file" if not openai.api_key else ""))
+                    (", Leave empty to use value from config file" if openai.api_key else ""))
             url_txt = gr.Textbox(label = "Openai API Base URL", placeholder="Enter openai base url 'https://xxx', Leave empty to use value '%s'" % openai.api_base)
         system_message = gr.Textbox(label = "System Message:", value = "You are an assistant who gives brief and concise answers.")
 
@@ -81,5 +79,3 @@ with gr.Blocks() as demo:
 
 if __name__ == "__main__":
     demo.launch()
-
-#demo.launch(server_name=server_name, server_port=server_port)
