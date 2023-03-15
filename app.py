@@ -85,4 +85,4 @@ if __name__ == "__main__":
     demo.launch()
 else:
     # run with "gradio app.py"
-    demo.launch(server_name="0.0.0.0", server_port=8000)
+    demo.launch(server_name="0.0.0.0")
