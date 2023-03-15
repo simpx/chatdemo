@@ -46,3 +46,5 @@ sh run.sh
 1. Create a new Space at https://huggingface.co/new-space and choose `Gradio` as the Space SDK.
 2. Push this project to the newly created Space.
 3. Wait for the build to complete, then access the Space page.
+
+see example: https://huggingface.co/spaces/simpx/chatdemo
