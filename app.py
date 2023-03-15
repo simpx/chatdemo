@@ -36,39 +36,44 @@ def respond(chat_history, message, system_message, key_txt, url_txt):
     openai.api_key = key_txt if key_txt else api_key_from_config
     if url_txt:
         openai.api_base = url_txt
+    if DEBUG:
+        print("messages:", messages)
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo", 
         messages=messages
     )
     if DEBUG:
-        print("messages:", messages)
         print("completion:", completion)
     response = completion['choices'][0]['message']['content']
     result = chat_history + [[message, response]]
     return result
 
 with gr.Blocks() as demo:
-    gr.Markdown("## Chat with GPT")
-    with gr.Row():
-        key_txt = gr.Textbox(label = "Openai Key", placeholder="Enter openai key 'sk-xxxx'%s" %
-                (", Leave empty to use value from config file" if not openai.api_key else ""))
-        url_txt = gr.Textbox(label = "Openai API Base URL", placeholder="Enter openai base url 'https://xxx', Leave empty to use value '%s'" % openai.api_base)
-    system_message = gr.Textbox(label = "System Message:", value = "You are an assistant who gives brief and concise answers.")
-    chatbot = gr.Chatbot()
-    message = gr.Textbox(label = "Message:", placeholder="Enter text and press 'Send'")
-    message.submit(
-        respond,
-        [chatbot, message, system_message, key_txt, url_txt],
-        chatbot,
-    )
-    with gr.Row():
-        clear = gr.Button("Clear")
-        clear.click(lambda: None, None, chatbot)
-        send = gr.Button("Send")
-        send.click(
+    with gr.Tab("Config"):
+        with gr.Row():
+            key_txt = gr.Textbox(label = "Openai Key", placeholder="Enter openai key 'sk-xxxx'%s" %
+                    (", Leave empty to use value from config file" if not openai.api_key else ""))
+            url_txt = gr.Textbox(label = "Openai API Base URL", placeholder="Enter openai base url 'https://xxx', Leave empty to use value '%s'" % openai.api_base)
+        system_message = gr.Textbox(label = "System Message:", value = "You are an assistant who gives brief and concise answers.")
+
+    with gr.Tab("Chat"):
+        gr.Markdown("## Chat with GPT")
+        chatbot = gr.Chatbot()
+        message = gr.Textbox(label = "Message:", placeholder="Enter text and press 'Send'")
+        message.submit(
             respond,
             [chatbot, message, system_message, key_txt, url_txt],
             chatbot,
         )
+        with gr.Row():
+            clear = gr.Button("Clear")
+            clear.click(lambda: None, None, chatbot)
+            send = gr.Button("Send")
+            send.click(
+                respond,
+                [chatbot, message, system_message, key_txt, url_txt],
+                chatbot,
+            )
+
 
 demo.launch(server_name=server_name, server_port=server_port)
