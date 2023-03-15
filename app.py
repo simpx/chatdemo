@@ -4,15 +4,16 @@ import openai
  # The first line contains the OpenAI key, while the second line provides the OpenAI URL, which is useful when the OpenAI server is hidden behind a proxy server.
  # eg. first line "sk-xxxxxxxxxx", second line "http://PROXY-URL"
 config = open("config").readlines()
-openai.api_key = config[0].strip()
+api_key_from_config = ""
+if len(config) > 0 and len(config[0].strip()) > 0:
+    api_key_from_config = config[0].strip()
 if len(config) > 1 and len(config[1].strip()) > 0:
     openai.api_base = config[1].strip()
 
 # config
-system_message = "You are an assistant who gives brief and concise answers."
 server_name = "0.0.0.0"
 server_port = 8000
-DEBUG = False
+DEBUG = True
 
 '''
  gradio: [['first question', 'No'], ['second question', 'Yes']]
@@ -26,12 +27,15 @@ def gradio_messages_to_openai_messages(g):
         result.append({"role": "assistant", "content": pair[1]})
     return result
 
-def respond(chat_history, message):
+def respond(chat_history, message, system_message, key_txt, url_txt):
     messages = [
             {"role": "system", "content": system_message},
             *gradio_messages_to_openai_messages(chat_history),
             {"role": "user", "content": message}
     ] 
+    openai.api_key = key_txt if key_txt else api_key_from_config
+    if url_txt:
+        openai.api_base = url_txt
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo", 
         messages=messages
@@ -45,12 +49,16 @@ def respond(chat_history, message):
 
 with gr.Blocks() as demo:
     gr.Markdown("## Chat with GPT")
-    state = gr.State()
+    with gr.Row():
+        key_txt = gr.Textbox(label = "Openai Key", placeholder="Enter openai key 'sk-xxxx'%s" %
+                (", Leave empty to use value from config file" if not openai.api_key else ""))
+        url_txt = gr.Textbox(label = "Openai API Base URL", placeholder="Enter openai base url 'https://xxx', Leave empty to use value '%s'" % openai.api_base)
+    system_message = gr.Textbox(label = "System Message:", value = "You are an assistant who gives brief and concise answers.")
     chatbot = gr.Chatbot()
-    message = gr.Textbox(label = "Message:", placeholder="Enter text")
+    message = gr.Textbox(label = "Message:", placeholder="Enter text and press 'Send'")
     message.submit(
         respond,
-        [chatbot, message],
+        [chatbot, message, system_message, key_txt, url_txt],
         chatbot,
     )
     with gr.Row():
@@ -59,7 +67,7 @@ with gr.Blocks() as demo:
         send = gr.Button("Send")
         send.click(
             respond,
-            [chatbot, message],
+            [chatbot, message, system_message, key_txt, url_txt],
             chatbot,
         )
 
