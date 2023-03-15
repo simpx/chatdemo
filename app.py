@@ -1,14 +1,23 @@
 import gradio as gr
 import openai
 
+ # The first line contains the OpenAI key, while the second line provides the OpenAI URL, which is useful when the OpenAI server is hidden behind a proxy server.
+ # eg. first line "sk-xxxxxxxxxx", second line "http://PROXY-URL"
 config = open("config").readlines()
 openai.api_key = config[0].strip()
-openai.api_base = config[1].strip()
+if len(config) > 1 and len(config[1].strip()) > 0:
+    openai.api_base = config[1].strip()
+
+# config
+system_message = "You are an assistant who gives brief and concise answers."
+server_name = "0.0.0.0"
+server_port = 8000
+DEBUG = False
 
 '''
- gradio: [['第一次说话', 'No'], ['试试第二次', 'Yes']]
- openai: [{"role": "user", "content": "第一次说话"},
-          {"role": "assistant", "content": "Who won the world series in 2020?"}]
+ gradio: [['first question', 'No'], ['second question', 'Yes']]
+ openai: [{"role": "user", "content": "first question"}, {"role": "assistant", "content": "No"}
+          {"role": "user", "content": "second question"}, {"role": "assistant", "content": "Yes"}]
 '''
 def gradio_messages_to_openai_messages(g):
     result = []
@@ -18,23 +27,20 @@ def gradio_messages_to_openai_messages(g):
     return result
 
 def respond(chat_history, message):
-    print("----------------")
-    print("chat_histroy:", chat_history)
-    print("message:", message)
     messages = [
-            {"role": "system", "content": "后面的回答必须简明扼要"},
+            {"role": "system", "content": system_message},
             *gradio_messages_to_openai_messages(chat_history),
             {"role": "user", "content": message}
     ] 
-    print("messages:", messages)
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo", 
         messages=messages
     )
-    print("completion:", completion)
+    if DEBUG:
+        print("messages:", messages)
+        print("completion:", completion)
     response = completion['choices'][0]['message']['content']
     result = chat_history + [[message, response]]
-    print("result:", result)
     return result
 
 with gr.Blocks() as demo:
@@ -57,4 +63,4 @@ with gr.Blocks() as demo:
             chatbot,
         )
 
-demo.launch(server_name="0.0.0.0", server_port=8000)
+demo.launch(server_name=server_name, server_port=server_port)
