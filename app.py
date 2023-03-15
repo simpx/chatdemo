@@ -3,7 +3,10 @@ import openai
 
  # The first line contains the OpenAI key, while the second line provides the OpenAI URL, which is useful when the OpenAI server is hidden behind a proxy server.
  # eg. first line "sk-xxxxxxxxxx", second line "http://PROXY-URL"
-config = open("config").readlines()
+if os.path.isfile('config'):
+    config = open("config").readlines()
+else:
+    config = ""
 api_key_from_config = ""
 if len(config) > 0 and len(config[0].strip()) > 0:
     api_key_from_config = config[0].strip()
