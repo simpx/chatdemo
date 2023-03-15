@@ -29,7 +29,7 @@ def gradio_messages_to_openai_messages(g):
         result.append({"role": "assistant", "content": pair[1]})
     return result
 
-def respond(chat_history, message, system_message, key_txt, url_txt):
+def respond(chat_history, message, system_message, key_txt, url_txt, model, temperature):
     messages = [
             {"role": "system", "content": system_message},
             *gradio_messages_to_openai_messages(chat_history),
@@ -40,9 +40,12 @@ def respond(chat_history, message, system_message, key_txt, url_txt):
         openai.api_base = url_txt
     if DEBUG:
         print("messages:", messages)
+        print("model:", model)
+        print("temperature:", temperature)
     completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo", 
-        messages=messages
+        model=model,
+        messages=messages,
+        temperature=temperature,
     )
     if DEBUG:
         print("completion:", completion)
@@ -57,14 +60,15 @@ with gr.Blocks() as demo:
                     (", Leave empty to use value from config file" if api_key_from_config else ""))
             url_txt = gr.Textbox(label = "Openai API Base URL", placeholder="Enter openai base url 'https://xxx', Leave empty to use value '%s'" % openai.api_base)
         system_message = gr.Textbox(label = "System Message:", value = "You are an assistant who gives brief and concise answers.")
-
+        model = gr.Dropdown(label="Model", choices=["gpt-3.5-turbo", "gpt-3.5-turbo-0301", "gpt-4"], multiselect=False, value="gpt-3.5-turbo", type="value")
+        temperature = gr.Slider(0, 2, value=1, label="Temperature", step=0.1, info="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.")
     with gr.Tab("Chat"):
         gr.Markdown("## Chat with GPT")
         chatbot = gr.Chatbot()
         message = gr.Textbox(label = "Message:", placeholder="Enter text and press 'Send'")
         message.submit(
             respond,
-            [chatbot, message, system_message, key_txt, url_txt],
+            [chatbot, message, system_message, key_txt, url_txt, model, temperature],
             chatbot,
         )
         with gr.Row():
@@ -73,7 +77,7 @@ with gr.Blocks() as demo:
             send = gr.Button("Send")
             send.click(
                 respond,
-                [chatbot, message, system_message, key_txt, url_txt],
+                [chatbot, message, system_message, key_txt, url_txt, model, temperature],
                 chatbot,
             )
 
