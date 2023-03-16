@@ -1,3 +1,4 @@
+from PyPDF2 import PdfReader
 import gradio as gr
 import openai
 import os
@@ -53,6 +54,38 @@ def respond(chat_history, message, system_message, key_txt, url_txt, model, temp
     result = chat_history + [[message, response]]
     return result
 
+def parse_pdf(prompt, pdfs, system_message, key_txt, url_txt, model, temperature):
+    result = ""
+    full_text = ""
+    for pdf in pdfs:
+        print("parse: ", pdf)
+        text = ""
+        reader = PdfReader(pdf.name)
+        for page in reader.pages:
+            text = text + page.extract_text()
+        full_text = text + "\n----------\n"
+    messages = [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": prompt + "\n\n###\n\n + full_text}
+    ]
+    openai.api_key = key_txt if key_txt else api_key_from_config
+    if url_txt:
+        openai.api_base = url_txt
+    if DEBUG:
+        print("messages:", messages)
+        print("model:", model)
+        print("temperature:", temperature)
+    completion = openai.ChatCompletion.create(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+    )
+    if DEBUG:
+        print("completion:", completion)
+    response = completion['choices'][0]['message']['content']
+
+    return response
+
 with gr.Blocks() as demo:
     with gr.Tab("Config"):
         with gr.Row():
@@ -80,6 +113,21 @@ with gr.Blocks() as demo:
                 [chatbot, message, system_message, key_txt, url_txt, model, temperature],
                 chatbot,
             )
+    with gr.Tab("PDF"):
+        gr.Markdown("## Parse PDF with GPT")
+        prompt = gr.Text(label="Prompt")
+        pdfs = gr.File(label="Upload PDF", file_count="multiple", file_types=[".pdf"])
+        markdown = gr.Markdown(label="Output")
+        with gr.Row():
+            clear = gr.Button("Clear")
+            clear.click(lambda: None, None, markdown)
+            submit = gr.Button("Upload")
+            submit.click(
+                    parse_pdf,
+                    [prompt, pdfs, system_message, key_txt, url_txt, model, temperature],
+                    markdown
+            )
+
 
 if __name__ == "__main__":
     demo.launch()
