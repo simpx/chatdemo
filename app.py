@@ -66,7 +66,7 @@ def parse_pdf(prompt, pdfs, system_message, key_txt, url_txt, model, temperature
         full_text = text + "\n----------\n"
     messages = [
             {"role": "system", "content": system_message},
-            {"role": "user", "content": prompt + "\n\n###\n\n + full_text}
+            {"role": "user", "content": prompt + "\n\n###\n\n + full_text"}
     ]
     openai.api_key = key_txt if key_txt else api_key_from_config
     if url_txt:
