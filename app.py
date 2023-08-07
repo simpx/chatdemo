@@ -54,20 +54,35 @@ def respond(chat_history, message, system_message, key_txt, url_txt, model, temp
     result = chat_history + [[message, response]]
     return result
 
+# The parse_pdf function is responsible for parsing the text from a PDF file and using it as input for the OpenAI GPT model.
+# Parameters:
+# - prompt: The initial prompt for the GPT model.
+# - pdfs: The PDF files to be parsed.
+# - system_message: The initial system message for the GPT model.
+# - key_txt: The OpenAI API key.
+# - url_txt: The OpenAI API base URL.
+# - model: The GPT model to be used.
+# - temperature: The temperature for the GPT model's output.
 def parse_pdf(prompt, pdfs, system_message, key_txt, url_txt, model, temperature):
     result = ""
     full_text = ""
+    # Iterate over each PDF file
     for pdf in pdfs:
         print("parse: ", pdf)
         text = ""
+        # Use PdfReader to read the PDF file
         reader = PdfReader(pdf.name)
+        # Iterate over each page in the PDF file and extract the text
         for page in reader.pages:
             text = text + page.extract_text()
+        # Add a separator between the text from different PDF files
         full_text = text + "\n----------\n"
+    # Construct a list of messages for the GPT model
     messages = [
             {"role": "system", "content": system_message},
             {"role": "user", "content": prompt + "\n\n###\n\n " + full_text}
     ]
+    # Set the OpenAI API key and base URL
     openai.api_key = key_txt if key_txt else api_key_from_config
     if url_txt:
         openai.api_base = url_txt
@@ -75,6 +90,7 @@ def parse_pdf(prompt, pdfs, system_message, key_txt, url_txt, model, temperature
         print("messages:", messages)
         print("model:", model)
         print("temperature:", temperature)
+    # Use the openai.ChatCompletion.create method to generate a response from the GPT model
     completion = openai.ChatCompletion.create(
         model=model,
         messages=messages,
@@ -82,6 +98,7 @@ def parse_pdf(prompt, pdfs, system_message, key_txt, url_txt, model, temperature
     )
     if DEBUG:
         print("completion:", completion)
+    # Extract the response from the completion
     response = completion['choices'][0]['message']['content']
 
     return response
