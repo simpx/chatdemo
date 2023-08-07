@@ -1,7 +1,7 @@
-from pdfplumber import PdfReader
 import gradio as gr
 import openai
 import os
+from pdfplumber import PdfReader
 
  # The first line contains the OpenAI key, while the second line provides the OpenAI URL, which is useful when the OpenAI server is hidden behind a proxy server.
  # eg. first line "sk-xxxxxxxxxx", second line "http://PROXY-URL"
