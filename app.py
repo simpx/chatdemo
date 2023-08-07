@@ -76,7 +76,7 @@ def parse_pdf(prompt, pdfs, system_message, key_txt, url_txt, model, temperature
         for page in reader.pages:
             text = text + page.extract_text()
         # Add a separator between the text from different PDF files
-        full_text = text + "\n----------\n"
+        full_text += text + "\n----------\n"
     # Construct a list of messages for the GPT model
     messages = [
             {"role": "system", "content": system_message},
