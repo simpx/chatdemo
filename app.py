@@ -1,4 +1,4 @@
-from PyPDF2 import PdfReader
+from pdfplumber import PdfReader
 import gradio as gr
 import openai
 import os
